@@ -13,7 +13,7 @@ if not GROK_API_KEY:
 
 st.set_page_config(page_title="joanInhA", page_icon="🐞", layout="centered")
 
-# Custom CSS para deixar mais bonitinho
+# Custom CSS
 st.markdown("""
 <style>
     .stChatMessage { border-radius: 15px; }
@@ -38,18 +38,20 @@ if "messages" not in st.session_state:
         {"role": "system", "content": system_prompt}
     ]
 
-# Exibir mensagens
+# Exibir mensagens anteriores
 for msg in st.session_state.messages:
     if msg["role"] != "system":
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-# Input
+# Input do usuário
 if prompt := st.chat_input("Fala aí, o que você quer zoar hoje? 🐞"):
+    # Adiciona mensagem do usuário
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
+    # Resposta da joanInhA
     with st.chat_message("assistant"):
         with st.spinner("joanInhA tá pensando... 🐞"):
             try:
@@ -60,27 +62,37 @@ if prompt := st.chat_input("Fala aí, o que você quer zoar hoje? 🐞"):
                         "Content-Type": "application/json"
                     },
                     json={
-                        "model": "grok-4.3",
+                        "model": "grok-4.3",        # ou "grok-4.3-latest" se preferir
                         "messages": st.session_state.messages,
-                        "temperature": 0.85,
-                        "max_tokens": 4096
+                        "temperature": 0.9,
+                        "max_tokens": 2048
                     },
-                    timeout=60
+                    timeout=90
                 )
                 
-                resposta = response.json()['choices'][0]['message']['content']
+                # Verifica se deu erro na API
+                if response.status_code != 200:
+                    st.error(f"❌ Erro da API: {response.status_code} - {response.text}")
+                    st.session_state.messages.pop()  # remove mensagem do usuário
+                    st.stop()
+                
+                data = response.json()
+                resposta = data['choices'][0]['message']['content']
                 
                 st.markdown(resposta)
                 st.session_state.messages.append({"role": "assistant", "content": resposta})
                 
             except Exception as e:
-                st.error("Eita... a joanInhA deu uma bugada 🐞 Tenta de novo!")
+                st.error(f"Eita... a joanInhA deu uma bugada: {str(e)} 🐞")
+                # Remove a mensagem do usuário se deu erro
+                if len(st.session_state.messages) > 1:
+                    st.session_state.messages.pop()
 
-# Sidebar com informações
+# Sidebar
 with st.sidebar:
     st.header("Sobre a joanInhA 🐞")
     st.write("A IA mais braba, sincera e engraçada que você vai conhecer.")
-    st.write("Feita com ❤️ e muito café")
+    st.write("Feita com ❤️ e muito café ☕")
     
     if st.button("🔄 Limpar Conversa"):
         st.session_state.messages = [{"role": "system", "content": system_prompt}]
