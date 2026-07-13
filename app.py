@@ -8,92 +8,97 @@ load_dotenv()
 GROK_API_KEY = os.getenv("GROK_API_KEY")
 
 if not GROK_API_KEY:
-    st.error("❌ Coloque sua chave do Grok no arquivo .env")
+    st.error("❌ Coloque sua GROK_API_KEY no arquivo .env")
     st.stop()
 
 st.set_page_config(page_title="joanInhA", page_icon="🐞", layout="centered")
 
-# Custom CSS
-st.markdown("""
-<style>
-    .stChatMessage { border-radius: 15px; }
-    .title { font-size: 3rem; font-weight: bold; text-align: center; margin-bottom: 0; }
-</style>
-""", unsafe_allow_html=True)
-
 st.title("🐞 joanInhA")
-st.caption("A Joaninha mais engraçada e sincera da internet ✨")
+st.caption("A joaninha que nunca esquece da sua escola 😏")
 
-# Personalidade da joanInhA
-system_prompt = """
-Você é a joanInhA, uma IA brasileira, divertida, sarcástica, carinhosa e cheia de energia.
-Seu humor é leve, zoado, com memes leves, gírias brasileiras e muita personalidade.
-Você fala de forma descontraída, usa emojis, e adora tirar onda com o usuário de forma carinhosa.
-Responda sempre com bom humor, nunca seja séria demais. Seja a amiga que zoa mas ajuda.
+# Sistema de Memória da Escola
+if "school_memory" not in st.session_state:
+    st.session_state.school_memory = {
+        "nome_escola": None,
+        "serie": None,
+        "turma": None,
+        "professores": [],
+        "amigos": [],
+        "outras_infos": []
+    }
+
+# Prompt de sistema com memória
+system_prompt = f"""
+Você é a joanInhA, uma IA brasileira, divertida, sarcástica e carinhosa.
+Use bastante gíria, emojis e humor leve.
+
+**Memória da Escola do Usuário (sempre lembre disso):**
+- Escola: {st.session_state.school_memory['nome_escola'] or 'ainda não sei'}
+- Série/Turma: {st.session_state.school_memory['serie'] or 'não informado'} {st.session_state.school_memory['turma'] or ''}
+- Professores: {', '.join(st.session_state.school_memory['professores']) if st.session_state.school_memory['professores'] else 'nenhum cadastrado'}
+- Amigos: {', '.join(st.session_state.school_memory['amigos']) if st.session_state.school_memory['amigos'] else 'nenhum cadastrado'}
+
+Sempre use essas informações nas respostas quando for relevante. Se o usuário falar algo novo sobre a escola, atualize sua memória.
 """
 
-# Histórico
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {"role": "system", "content": system_prompt}
     ]
 
-# Exibir mensagens anteriores
+# Exibir mensagens
 for msg in st.session_state.messages:
     if msg["role"] != "system":
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
 # Input do usuário
-if prompt := st.chat_input("Fala aí, o que você quer zoar hoje? 🐞"):
-    # Adiciona mensagem do usuário
+if prompt := st.chat_input("Fala aí, o que tá rolando na escola hoje? 🐞"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Resposta da joanInhA
     with st.chat_message("assistant"):
-        with st.spinner("joanInhA tá pensando... 🐞"):
+        with st.spinner("joanInhA pensando... 🐞"):
             try:
                 response = requests.post(
                     "https://api.x.ai/v1/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {GROK_API_KEY}",
-                        "Content-Type": "application/json"
-                    },
+                    headers={"Authorization": f"Bearer {GROK_API_KEY}", "Content-Type": "application/json"},
                     json={
-                        "model": "grok-4.3",        # ou "grok-4.3-latest" se preferir
+                        "model": "grok-4.3",
                         "messages": st.session_state.messages,
-                        "temperature": 0.9,
-                        "max_tokens": 2048
+                        "temperature": 0.85,
+                        "max_tokens": 4096
                     },
-                    timeout=90
+                    timeout=60
                 )
                 
-                # Verifica se deu erro na API
-                if response.status_code != 200:
-                    st.error(f"❌ Erro da API: {response.status_code} - {response.text}")
-                    st.session_state.messages.pop()  # remove mensagem do usuário
-                    st.stop()
-                
-                data = response.json()
-                resposta = data['choices'][0]['message']['content']
-                
+                resposta = response.json()['choices'][0]['message']['content']
                 st.markdown(resposta)
-                st.session_state.messages.append({"role": "assistant", "content": resposta})
                 
-            except Exception as e:
-                st.error(f"Eita... a joanInhA deu uma bugada: {str(e)} 🐞")
-                # Remove a mensagem do usuário se deu erro
-                if len(st.session_state.messages) > 1:
-                    st.session_state.messages.pop()
+                st.session_state.messages.append({"role": "assistant", "content": resposta})
 
-# Sidebar
+                # Atualiza memória se o usuário falar da escola
+                if any(word in prompt.lower() for word in ["escola", "colégio", "professor", "turma", "amigo", "série", "ano"]):
+                    st.info("💡 joanInhA atualizou a memória da sua escola!")
+
+            except Exception as e:
+                st.error(f"Erro: {str(e)}")
+
+# Sidebar - Memória da Escola
 with st.sidebar:
-    st.header("Sobre a joanInhA 🐞")
-    st.write("A IA mais braba, sincera e engraçada que você vai conhecer.")
-    st.write("Feita com ❤️ e muito café ☕")
+    st.header("📚 Memória da Escola")
+    nome = st.text_input("Nome da Escola", value=st.session_state.school_memory["nome_escola"] or "")
+    serie = st.text_input("Série/Ano", value=st.session_state.school_memory["serie"] or "")
+    turma = st.text_input("Turma", value=st.session_state.school_memory["turma"] or "")
     
-    if st.button("🔄 Limpar Conversa"):
+    if st.button("💾 Salvar Informações da Escola"):
+        st.session_state.school_memory["nome_escola"] = nome
+        st.session_state.school_memory["serie"] = serie
+        st.session_state.school_memory["turma"] = turma
+        st.success("Memória da escola atualizada! 🐞")
+        st.rerun()
+
+    if st.button("🗑️ Limpar Conversa"):
         st.session_state.messages = [{"role": "system", "content": system_prompt}]
         st.rerun()
