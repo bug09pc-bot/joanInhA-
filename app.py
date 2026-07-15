@@ -1,20 +1,20 @@
 import streamlit as st
 from dotenv import load_dotenv
 import os
-from openai import OpenAI
+from groq import Groq
 
 load_dotenv()
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    st.error("❌ Coloque sua OPENAI_API_KEY no arquivo .env")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+if not GROQ_API_KEY:
+    st.error("❌ Coloque sua GROQ_API_KEY no arquivo .env")
     st.stop()
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+client = Groq(api_key=GROQ_API_KEY)
 
 st.set_page_config(page_title="joanInhA", page_icon="🐞", layout="centered")
 st.title("🐞 joanInhA")
-st.caption("A joaninha mais engraçada, sincera e brasileira do ChatGPT ✨")
+st.caption("A joaninha mais rápida e sincera do Groq ✨")
 
 # ====================== MEMÓRIA DA ESCOLA ======================
 if "school_memory" not in st.session_state:
@@ -41,7 +41,6 @@ if "messages" not in st.session_state:
         {"role": "system", "content": get_system_prompt()}
     ]
 
-# ====================== ATUALIZAR SYSTEM PROMPT ======================
 def update_system_prompt():
     """Atualiza o system prompt no histórico"""
     new_system = get_system_prompt()
@@ -64,13 +63,19 @@ if prompt := st.chat_input("Fala aí, o que tá rolando? 🐞"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("joanInhA tá pensando... 🐞"):
+        with st.spinner("joanInhA tá voando... 🐞⚡"):
             try:
                 response = client.chat.completions.create(
-                    model="gpt-4o-mini",  # ou "gpt-4o" se quiser mais braba
+                    model="llama-3.1-70b-versatile",   # Ótimo custo-benefício
+                    # Outras opções boas:
+                    # "llama-3.3-70b-versatile"
+                    # "mixtral-8x7b-32768"
+                    # "gemma2-9b-it"
+                    
                     messages=st.session_state.messages,
                     temperature=0.87,
-                    max_tokens=4096
+                    max_tokens=4096,
+                    top_p=0.9,
                 )
                 
                 resposta = response.choices[0].message.content
@@ -79,7 +84,7 @@ if prompt := st.chat_input("Fala aí, o que tá rolando? 🐞"):
                 st.session_state.messages.append({"role": "assistant", "content": resposta})
                 
             except Exception as e:
-                st.error(f"Erro na API: {str(e)}")
+                st.error(f"Erro na Groq: {str(e)}")
 
 # ====================== SIDEBAR ======================
 with st.sidebar:
@@ -106,7 +111,7 @@ with st.sidebar:
                 "turma": turma.strip() or None,
             })
             update_system_prompt()
-            st.success("Memória atualizada com sucesso! 🐞")
+            st.success("Memória atualizada! A joaninha agora sabe tudo sobre sua escola 🐞")
             st.rerun()
     
     with col2:
@@ -114,8 +119,8 @@ with st.sidebar:
             st.session_state.messages = [
                 {"role": "system", "content": get_system_prompt()}
             ]
-            st.success("Conversa limpa! Vamos recomeçar? ✨")
+            st.success("Conversa limpa! Bora começar de novo? ✨")
             st.rerun()
     
     st.divider()
-    st.caption("Made with ❤️ for the best joaninha")
+    st.caption("Powered by Groq ⚡ • Super rápido")
