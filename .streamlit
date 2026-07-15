@@ -1,1 +1,2 @@
-
+secrets.toml
+GROQ_API_KEY = ""
