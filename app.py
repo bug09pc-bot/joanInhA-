@@ -1,109 +1,144 @@
 import streamlit as st
+import os
 from groq import Groq
 
-# ====================== CARREGAR SECRETS ======================
-# Isso pega a chave que você vai colocar nos Secrets
-try:
-    GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
-except:
-    GROQ_API_KEY = None
+st.set_page_config(
+    page_title="joanInhA",
+    page_icon="🐞",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-if not GROQ_API_KEY:
-    st.error("❌ GROQ_API_KEY não encontrada!")
-    st.info("Vá em Settings → Secrets e adicione sua chave do Groq.")
-    st.stop()
+# ==================== ESTILO LIMPO (igual às fotos) ====================
+st.markdown("""
+<style>
+    .stApp {
+        background-color: #f8f9fa;
+    }
+    .main {
+        background-color: white;
+    }
+    h1 {
+        font-weight: 700;
+        color: #1a1a1a;
+    }
+    .stChatMessage {
+        border-radius: 12px;
+    }
+    div[data-testid="stSidebar"] {
+        background-color: #f1f3f5;
+    }
+    .stButton > button {
+        border-radius: 10px;
+        width: 100%;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-client = Groq(api_key=GROQ_API_KEY)
+# ==================== SIDEBAR - MEMÓRIA DA ESCOLA ====================
+with st.sidebar:
+    st.markdown("### 📚 Memória da Escola")
+    
+    nome_escola = st.text_input("Nome da Escola", placeholder="Ex: Colégio São João")
+    serie = st.text_input("Série/Ano", placeholder="Ex: 8º ano")
+    turma = st.text_input("Turma", placeholder="Ex: 8B")
+    
+    col_s1, col_s2 = st.columns(2)
+    with col_s1:
+        if st.button("💾 Salvar Informações", use_container_width=True):
+            st.session_state.escola = {
+                "nome": nome_escola,
+                "serie": serie,
+                "turma": turma
+            }
+            st.success("Salvo!")
+    
+    with col_s2:
+        if st.button("🗑️ Limpar Conversa", use_container_width=True):
+            st.session_state.historico = []
+            st.rerun()
+    
+    st.markdown("---")
+    st.caption("Powered by Groq ⚡")
 
-# ====================== CONFIGURAÇÃO DA PÁGINA ======================
-st.set_page_config(page_title="joanInhA", page_icon="🐞", layout="centered")
-st.title("🐞 joanInhA")
+# ==================== TELA PRINCIPAL ====================
+st.markdown("""
+<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
+    <span style="font-size: 42px;">🐞</span>
+    <h1 style="margin: 0; font-size: 2.4rem;">joanInhA</h1>
+</div>
+""", unsafe_allow_html=True)
+
 st.caption("A joaninha mais rápida e sincera do Groq ✨")
 
-# ====================== MEMÓRIA DA ESCOLA ======================
-if "school_memory" not in st.session_state:
-    st.session_state.school_memory = {
-        "nome_escola": None,
-        "serie": None,
-        "turma": None,
-    }
+# ==================== CONFIGURAÇÃO GROQ ====================
+groq_key = os.getenv("GROQ_API_KEY")
 
-def get_system_prompt():
-    return f"""
-Você é a joanInhA, uma IA brasileira super divertida, sarcástica, carinhosa e cheia de energia.
-Fala com gírias, emojis e humor leve. Nunca seja séria demais. Responde sempre em português brasileiro.
+if not groq_key:
+    st.error("🔑 Configure a GROQ_API_KEY nos Secrets!")
+    st.stop()
 
-**Memória da Escola:**
-- Escola: {st.session_state.school_memory['nome_escola'] or 'ainda não sei'}
-- Série/Ano: {st.session_state.school_memory['serie'] or 'não informado'}
-- Turma: {st.session_state.school_memory['turma'] or 'não informado'}
-"""
+if "historico" not in st.session_state:
+    st.session_state.historico = []
 
-# ====================== MENSAGENS ======================
-if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {"role": "system", "content": get_system_prompt()}
-    ]
+if "escola" not in st.session_state:
+    st.session_state.escola = {"nome": "", "serie": "", "turma": ""}
 
-def update_system_prompt():
-    new_system = get_system_prompt()
-    if st.session_state.messages and st.session_state.messages[0]["role"] == "system":
-        st.session_state.messages[0]["content"] = new_system
+# Mostra histórico
+for msg in st.session_state.historico:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-# ====================== EXIBIR HISTÓRICO ======================
-for msg in st.session_state.messages:
-    if msg["role"] != "system":
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
+# Input do chat
+prompt = st.chat_input("Fala aí, o que tá rolando? 🐞")
 
-# ====================== CHAT ======================
-if prompt := st.chat_input("Fala aí, o que tá rolando? 🐞"):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    
+# Processar mensagem
+if prompt:
+    # Monta contexto da escola (se tiver)
+    contexto_escola = ""
+    if st.session_state.escola["nome"]:
+        contexto_escola = (
+            f"\n\n[Contexto do aluno]: "
+            f"Escola: {st.session_state.escola['nome']}, "
+            f"Série: {st.session_state.escola['serie']}, "
+            f"Turma: {st.session_state.escola['turma']}"
+        )
+
+    st.session_state.historico.append({"role": "user", "content": prompt})
+
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("joanInhA tá voando... 🐞⚡"):
+        with st.spinner("joanInhA pensando..."):
             try:
-                response = client.chat.completions.create(
-                    model="llama-3.1-70b-versatile",
-                    messages=st.session_state.messages,
-                    temperature=0.87,
-                    max_tokens=4096,
+                client = Groq(api_key=groq_key)
+
+                system_prompt = (
+                    "Você é a joanInhA, uma IA super rápida, sincera e descontraída. "
+                    "Responda sempre em português do Brasil, de forma leve, direta e amigável. "
+                    "Use emojis de joaninha 🐞 quando fizer sentido."
+                    + contexto_escola
                 )
+
+                messages = [{"role": "system", "content": system_prompt}]
+
+                # Últimas 12 mensagens pra memória
+                for m in st.session_state.historico[-12:]:
+                    messages.append({"role": m["role"], "content": m["content"]})
+
+                response = client.chat.completions.create(
+                    model="llama-3.1-8b-instant",
+                    messages=messages,
+                    temperature=0.7,
+                    max_tokens=800
+                )
+
                 resposta = response.choices[0].message.content
-                
                 st.markdown(resposta)
-                st.session_state.messages.append({"role": "assistant", "content": resposta})
+
             except Exception as e:
-                st.error(f"Erro: {str(e)}")
+                st.error("Ops, a joaninha deu uma pausa. Tenta de novo em alguns segundos 🐞")
+                resposta = "Desculpa, tive um probleminha técnico. Me pergunta de novo?"
 
-# ====================== SIDEBAR ======================
-with st.sidebar:
-    st.header("📚 Memória da Escola")
-    
-    nome = st.text_input("Nome da Escola", value=st.session_state.school_memory["nome_escola"] or "", placeholder="Ex: Colégio São João")
-    serie = st.text_input("Série/Ano", value=st.session_state.school_memory["serie"] or "", placeholder="Ex: 8º ano")
-    turma = st.text_input("Turma", value=st.session_state.school_memory["turma"] or "", placeholder="Ex: 8B")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("💾 Salvar Informações", use_container_width=True):
-            st.session_state.school_memory.update({
-                "nome_escola": nome.strip() or None,
-                "serie": serie.strip() or None,
-                "turma": turma.strip() or None,
-            })
-            update_system_prompt()
-            st.success("Memória salva! 🐞")
-            st.rerun()
-    
-    with col2:
-        if st.button("🗑️ Limpar Conversa", use_container_width=True):
-            st.session_state.messages = [{"role": "system", "content": get_system_prompt()}]
-            st.success("Conversa limpa!")
-            st.rerun()
-
-    st.divider()
-    st.caption("Powered by Groq ⚡")
+    st.session_state.historico.append({"role": "assistant", "content": resposta})
