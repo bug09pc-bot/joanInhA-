@@ -8,7 +8,6 @@ from PIL import Image
 import io
 import locale
 
-# Tenta configurar para português
 try:
     locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
 except:
@@ -33,18 +32,13 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ==================== FUNÇÕES DE TEMPO REAL ====================
+# ==================== FUNÇÕES ====================
 
 def get_data_hora_atual():
     agora = datetime.now()
     dias = {
-        0: "segunda-feira",
-        1: "terça-feira",
-        2: "quarta-feira",
-        3: "quinta-feira",
-        4: "sexta-feira",
-        5: "sábado",
-        6: "domingo"
+        0: "segunda-feira", 1: "terça-feira", 2: "quarta-feira",
+        3: "quinta-feira", 4: "sexta-feira", 5: "sábado", 6: "domingo"
     }
     dia_semana = dias[agora.weekday()]
     data = agora.strftime("%d/%m/%Y")
@@ -77,18 +71,10 @@ def get_previsao_tempo(cidade="São Paulo"):
         daily = data["daily"]
 
         codigos = {
-            0: "céu limpo ☀️",
-            1: "principalmente limpo 🌤️",
-            2: "parcialmente nublado ⛅",
-            3: "nublado ☁️",
-            45: "neblina 🌫️",
-            48: "neblina 🌫️",
-            51: "garoa leve 🌧️",
-            61: "chuva leve 🌧️",
-            63: "chuva moderada 🌧️",
-            65: "chuva forte 🌧️",
-            80: "pancadas de chuva 🌦️",
-            95: "tempestade ⛈️",
+            0: "céu limpo ☀️", 1: "principalmente limpo 🌤️", 2: "parcialmente nublado ⛅",
+            3: "nublado ☁️", 45: "neblina 🌫️", 48: "neblina 🌫️",
+            51: "garoa leve 🌧️", 61: "chuva leve 🌧️", 63: "chuva moderada 🌧️",
+            65: "chuva forte 🌧️", 80: "pancadas de chuva 🌦️", 95: "tempestade ⛈️",
         }
         descricao = codigos.get(current["weather_code"], "tempo variável")
 
@@ -135,7 +121,7 @@ with st.sidebar:
         st.rerun()
     
     st.markdown("---")
-    st.caption("Powered by Groq ⚡ + Open-Meteo")
+    st.caption("Powered by Groq ⚡")
 
 # ==================== TÍTULO ====================
 st.markdown("""
@@ -210,7 +196,6 @@ if prompt or uploaded_file is not None:
             try:
                 client = Groq(api_key=groq_key)
                
-                # Informações em tempo real
                 info_tempo_real = f"\n\n[Informações atuais]: {get_data_hora_atual()}"
                 
                 texto_lower = user_text.lower()
@@ -224,7 +209,7 @@ if prompt or uploaded_file is not None:
                                 break
                     info_tempo_real += f"\n\n{get_previsao_tempo(cidade)}"
                 
-                if any(palavra in texto_lower for palavra in ["onde fica", "localização", "endereço", "fica onde", "o que é"]):
+                if any(palavra in texto_lower for palavra in ["onde fica", "localização", "endereço", "fica onde"]):
                     info_tempo_real += f"\n\n{buscar_lugar(user_text)}"
                
                 system_prompt = (
@@ -258,11 +243,11 @@ if prompt or uploaded_file is not None:
                             "content": m["content"]
                         })
                
-                # Modelos atualizados (funcionando)
+                # ========== MODELOS ATUALIZADOS (AGOSTO 2026) ==========
                 if uploaded_file:
-                    model = "qwen/qwen3.6-27b"              # visão
+                    model = "qwen/qwen3.6-27b"           # modelo com visão
                 else:
-                    model = "llama-3.3-70b-versatile"       # texto
+                    model = "openai/gpt-oss-20b"        # modelo de texto rápido e estável
                
                 response = client.chat.completions.create(
                     model=model,
