@@ -122,19 +122,20 @@ with st.sidebar:
     st.markdown("---")
     st.caption("Powered by Groq ⚡")
 
-# ==================== TÍTULO COM LOGO ====================
-col1, col2 = st.columns([0.12, 0.88])
+# ==================== TÍTULO + LOGO CENTRALIZADA ====================
+st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
 
-with col1:
-    st.image("logo.png", width=70)
+# Logo centralizada (tamanho médio)
+st.image("logo.png", width=160)
 
-with col2:
-    st.markdown("""
-    <div style="padding-top: 8px;">
-        <h1 style="margin: 0; font-size: 2.3rem; font-weight: 700;">joanInhA</h1>
-        <p style="margin: 0; color: #666; font-size: 0.95rem;">A Inteligência Artificial da Escola Joana Alves ✨</p>
-    </div>
-    """, unsafe_allow_html=True)
+# Nome grande
+st.markdown("""
+    <h1 style="margin: 10px 0 0 0; font-size: 2.6rem; font-weight: 700;">joanInhA</h1>
+    <p style="margin: 0; color: #666; font-size: 1.05rem;">A Inteligência Artificial da Escola Joana Alves ✨</p>
+""", unsafe_allow_html=True)
+
+st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
 # ==================== CONFIG ====================
 try:
