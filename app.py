@@ -126,7 +126,10 @@ with st.sidebar:
 st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
 
 # Logo centralizada (tamanho médio)
-st.image("logo.png", width=160)
+try:
+    st.image("logo.png", width=160)
+except:
+    st.markdown("<div style='font-size: 80px;'>🐞</div>", unsafe_allow_html=True)
 
 # Nome grande
 st.markdown("""
@@ -152,7 +155,9 @@ if "historico" not in st.session_state:
 
 # ==================== HISTÓRICO ====================
 for msg in st.session_state.historico:
-    with st.chat_message(msg["role"]):
+    # Aqui a mágica: avatar de joaninha para a IA
+    avatar = "🐞" if msg["role"] == "assistant" else "😊"
+    with st.chat_message(msg["role"], avatar=avatar):
         if msg.get("image"):
             try:
                 st.image(msg["image"], width=320)
@@ -200,12 +205,12 @@ if prompt or uploaded_file is not None:
    
     st.session_state.historico.append(user_msg)
    
-    with st.chat_message("user"):
+    with st.chat_message("user", avatar="😊"):
         if uploaded_file:
             st.image(uploaded_file, width=320)
         st.markdown(user_text)
    
-    with st.chat_message("assistant"):
+    with st.chat_message("assistant", avatar="🐞"):   # ← Joaninha aqui
         with st.spinner("joanInhA analisando..." if uploaded_file else "joanInhA pensando..."):
             try:
                 client = Groq(api_key=groq_key)
@@ -266,7 +271,6 @@ if prompt or uploaded_file is not None:
                
                 # ========== MODELOS ==========
                 if img_base64:
-                    # Tenta modelos de visão (fallback)
                     modelos_visao = [
                         "qwen/qwen3.8-27b",
                         "qwen/qwen3.6-27b",
