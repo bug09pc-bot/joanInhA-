@@ -33,7 +33,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==================== FUNÇÕES ====================
-
 def get_data_hora_atual():
     agora = datetime.now()
     dias = {
@@ -57,7 +56,7 @@ def get_previsao_tempo(cidade="São Paulo"):
         lon = geo["results"][0]["longitude"]
         nome_cidade = geo["results"][0]["name"]
         pais = geo["results"][0].get("country", "")
-
+        
         weather_url = (
             f"https://api.open-meteo.com/v1/forecast?"
             f"latitude={lat}&longitude={lon}"
@@ -69,7 +68,7 @@ def get_previsao_tempo(cidade="São Paulo"):
         
         current = data["current"]
         daily = data["daily"]
-
+        
         codigos = {
             0: "céu limpo ☀️", 1: "principalmente limpo 🌤️", 2: "parcialmente nublado ⛅",
             3: "nublado ☁️", 45: "neblina 🌫️", 48: "neblina 🌫️",
@@ -77,7 +76,7 @@ def get_previsao_tempo(cidade="São Paulo"):
             65: "chuva forte 🌧️", 80: "pancadas de chuva 🌦️", 95: "tempestade ⛈️",
         }
         descricao = codigos.get(current["weather_code"], "tempo variável")
-
+        
         texto = (
             f"**Clima em {nome_cidade} ({pais}):**\n"
             f"- Agora: {current['temperature_2m']}°C, {descricao}\n"
@@ -149,7 +148,10 @@ if "historico" not in st.session_state:
 for msg in st.session_state.historico:
     with st.chat_message(msg["role"]):
         if msg.get("image"):
-            st.image(msg["image"], width=320)
+            try:
+                st.image(msg["image"], width=320)
+            except:
+                pass
         st.markdown(msg["content"])
 
 # ==================== INPUTS ====================
@@ -171,31 +173,42 @@ if prompt or uploaded_file is not None:
    
     user_msg = {"role": "user", "content": user_text}
    
+    img_base64 = None
+    mime = None
+    
     if uploaded_file:
-        image = Image.open(uploaded_file)
+        # Converte a imagem corretamente para JPEG (mais compatível)
+        image = Image.open(uploaded_file).convert("RGB")
+        
+        # Redimensiona se for muito grande (evita erro de tamanho)
+        max_size = 1024
+        if max(image.size) > max_size:
+            image.thumbnail((max_size, max_size))
+        
         buffered = io.BytesIO()
-        image_format = uploaded_file.type.split("/")[-1].upper()
-        if image_format == "JPG":
-            image_format = "JPEG"
-        image.save(buffered, format=image_format)
+        image.save(buffered, format="JPEG", quality=85)
         img_base64 = base64.b64encode(buffered.getvalue()).decode()
+        mime = "image/jpeg"
        
         user_msg["image"] = uploaded_file
         user_msg["base64"] = img_base64
-        user_msg["mime"] = uploaded_file.type
+        user_msg["mime"] = mime
    
     st.session_state.historico.append(user_msg)
    
+    # Mostra a mensagem do usuário
     with st.chat_message("user"):
         if uploaded_file:
             st.image(uploaded_file, width=320)
         st.markdown(user_text)
    
+    # Resposta da joanInhA
     with st.chat_message("assistant"):
         with st.spinner("joanInhA analisando..." if uploaded_file else "joanInhA pensando..."):
             try:
                 client = Groq(api_key=groq_key)
                
+                # ---------- Informações em tempo real ----------
                 info_tempo_real = f"\n\n[Informações atuais]: {get_data_hora_atual()}"
                 
                 texto_lower = user_text.lower()
@@ -223,31 +236,38 @@ if prompt or uploaded_file is not None:
                
                 messages = [{"role": "system", "content": system_prompt}]
                
-                for m in st.session_state.historico[-8:]:
-                    if m["role"] == "user" and m.get("base64"):
-                        messages.append({
-                            "role": "user",
-                            "content": [
-                                {"type": "text", "text": m["content"]},
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": f"data:{m['mime']};base64,{m['base64']}"
-                                    }
+                # ---------- Monta o histórico (só texto nas mensagens antigas) ----------
+                for m in st.session_state.historico[:-1]:  # todas menos a última
+                    messages.append({
+                        "role": m["role"],
+                        "content": m["content"]
+                    })
+                
+                # ---------- Última mensagem (pode ter imagem) ----------
+                if img_base64:
+                    messages.append({
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": user_text},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:{mime};base64,{img_base64}"
                                 }
-                            ]
-                        })
-                    else:
-                        messages.append({
-                            "role": m["role"],
-                            "content": m["content"]
-                        })
-               
-                # ========== MODELOS ATUALIZADOS (AGOSTO 2026) ==========
-                if uploaded_file:
-                    model = "qwen/qwen3.6-27b"           # modelo com visão
+                            }
+                        ]
+                    })
                 else:
-                    model = "openai/gpt-oss-20b"        # modelo de texto rápido e estável
+                    messages.append({
+                        "role": "user",
+                        "content": user_text
+                    })
+               
+                # ========== MODELOS CORRETOS ==========
+                if img_base64:
+                    model = "qwen/qwen3.6-27b"          # modelo com visão
+                else:
+                    model = "openai/gpt-oss-20b"        # modelo de texto rápido
                
                 response = client.chat.completions.create(
                     model=model,
