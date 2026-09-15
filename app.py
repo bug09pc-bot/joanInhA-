@@ -177,10 +177,8 @@ if prompt or uploaded_file is not None:
     mime = None
     
     if uploaded_file:
-        # Converte a imagem corretamente para JPEG (mais compatível)
         image = Image.open(uploaded_file).convert("RGB")
         
-        # Redimensiona se for muito grande (evita erro de tamanho)
         max_size = 1024
         if max(image.size) > max_size:
             image.thumbnail((max_size, max_size))
@@ -196,19 +194,16 @@ if prompt or uploaded_file is not None:
    
     st.session_state.historico.append(user_msg)
    
-    # Mostra a mensagem do usuário
     with st.chat_message("user"):
         if uploaded_file:
             st.image(uploaded_file, width=320)
         st.markdown(user_text)
    
-    # Resposta da joanInhA
     with st.chat_message("assistant"):
         with st.spinner("joanInhA analisando..." if uploaded_file else "joanInhA pensando..."):
             try:
                 client = Groq(api_key=groq_key)
                
-                # ---------- Informações em tempo real ----------
                 info_tempo_real = f"\n\n[Informações atuais]: {get_data_hora_atual()}"
                 
                 texto_lower = user_text.lower()
@@ -236,14 +231,14 @@ if prompt or uploaded_file is not None:
                
                 messages = [{"role": "system", "content": system_prompt}]
                
-                # ---------- Monta o histórico (só texto nas mensagens antigas) ----------
-                for m in st.session_state.historico[:-1]:  # todas menos a última
+                # Histórico antigo (só texto)
+                for m in st.session_state.historico[:-1]:
                     messages.append({
                         "role": m["role"],
                         "content": m["content"]
                     })
                 
-                # ---------- Última mensagem (pode ter imagem) ----------
+                # Última mensagem (com imagem se existir)
                 if img_base64:
                     messages.append({
                         "role": "user",
@@ -263,11 +258,11 @@ if prompt or uploaded_file is not None:
                         "content": user_text
                     })
                
-                # ========== MODELOS CORRETOS ==========
+                # ========== MODELOS QUE FUNCIONAM ==========
                 if img_base64:
-                    model = "qwen/qwen3.6-27b"          # modelo com visão
+                    model = "meta-llama/llama-4-scout-17b-16e-instruct"   # modelo com visão
                 else:
-                    model = "openai/gpt-oss-20b"        # modelo de texto rápido
+                    model = "openai/gpt-oss-20b"                          # modelo de texto
                
                 response = client.chat.completions.create(
                     model=model,
