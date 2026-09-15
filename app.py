@@ -122,14 +122,19 @@ with st.sidebar:
     st.markdown("---")
     st.caption("Powered by Groq ⚡")
 
-# ==================== TÍTULO ====================
-st.markdown("""
-<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
-    <span style="font-size: 42px;">🐞</span>
-    <h1 style="margin: 0; font-size: 2.4rem;">joanInhA</h1>
-</div>
-""", unsafe_allow_html=True)
-st.caption("A joaninha mais rápida e sincera do Groq ✨")
+# ==================== TÍTULO COM LOGO ====================
+col1, col2 = st.columns([0.12, 0.88])
+
+with col1:
+    st.image("logo.png", width=70)
+
+with col2:
+    st.markdown("""
+    <div style="padding-top: 8px;">
+        <h1 style="margin: 0; font-size: 2.3rem; font-weight: 700;">joanInhA</h1>
+        <p style="margin: 0; color: #666; font-size: 0.95rem;">A joaninha mais rápida e sincera do Groq ✨</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 # ==================== CONFIG ====================
 try:
@@ -258,20 +263,41 @@ if prompt or uploaded_file is not None:
                         "content": user_text
                     })
                
-                # ========== MODELOS QUE FUNCIONAM ==========
+                # ========== MODELOS ==========
                 if img_base64:
-                    model = "meta-llama/llama-4-scout-17b-16e-instruct"   # modelo com visão
+                    # Tenta modelos de visão (fallback)
+                    modelos_visao = [
+                        "qwen/qwen3.8-27b",
+                        "qwen/qwen3.6-27b",
+                        "meta-llama/llama-4-scout-17b-16e-instruct",
+                    ]
+                    
+                    resposta = None
+                    for model in modelos_visao:
+                        try:
+                            response = client.chat.completions.create(
+                                model=model,
+                                messages=messages,
+                                temperature=0.7,
+                                max_tokens=1024
+                            )
+                            resposta = response.choices[0].message.content
+                            break
+                        except:
+                            continue
+                    
+                    if resposta is None:
+                        resposta = "Desculpa, não consegui ver a imagem agora. Sua conta do Groq não tem acesso a modelos de visão 🐞"
                 else:
-                    model = "openai/gpt-oss-20b"                          # modelo de texto
+                    model = "openai/gpt-oss-20b"
+                    response = client.chat.completions.create(
+                        model=model,
+                        messages=messages,
+                        temperature=0.7,
+                        max_tokens=1024
+                    )
+                    resposta = response.choices[0].message.content
                
-                response = client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                    temperature=0.7,
-                    max_tokens=1024
-                )
-               
-                resposta = response.choices[0].message.content
                 st.markdown(resposta)
                
             except Exception as e:
