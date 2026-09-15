@@ -132,7 +132,7 @@ with col2:
     st.markdown("""
     <div style="padding-top: 8px;">
         <h1 style="margin: 0; font-size: 2.3rem; font-weight: 700;">joanInhA</h1>
-        <p style="margin: 0; color: #666; font-size: 0.95rem;">A joaninha mais rápida e sincera do Groq ✨</p>
+        <p style="margin: 0; color: #666; font-size: 0.95rem;">A inteligência Artificial Da Escola Joana Alves ✨</p>
     </div>
     """, unsafe_allow_html=True)
 
