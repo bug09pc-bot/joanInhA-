@@ -125,13 +125,11 @@ with st.sidebar:
 # ==================== TÍTULO + LOGO CENTRALIZADA ====================
 st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
 
-# Logo centralizada (tamanho médio)
 try:
     st.image("logo.png", width=160)
 except:
     st.markdown("<div style='font-size: 80px;'>🐞</div>", unsafe_allow_html=True)
 
-# Nome grande
 st.markdown("""
     <h1 style="margin: 10px 0 0 0; font-size: 2.6rem; font-weight: 700;">joanInhA</h1>
     <p style="margin: 0; color: #666; font-size: 1.05rem;">A Inteligência Artificial da Escola Joana Alves ✨</p>
@@ -155,7 +153,6 @@ if "historico" not in st.session_state:
 
 # ==================== HISTÓRICO ====================
 for msg in st.session_state.historico:
-    # Aqui a mágica: avatar de joaninha para a IA
     avatar = "🐞" if msg["role"] == "assistant" else "😊"
     with st.chat_message(msg["role"], avatar=avatar):
         if msg.get("image"):
@@ -210,7 +207,7 @@ if prompt or uploaded_file is not None:
             st.image(uploaded_file, width=320)
         st.markdown(user_text)
    
-    with st.chat_message("assistant", avatar="🐞"):   # ← Joaninha aqui
+    with st.chat_message("assistant", avatar="🐞"):
         with st.spinner("joanInhA analisando..." if uploaded_file else "joanInhA pensando..."):
             try:
                 client = Groq(api_key=groq_key)
@@ -231,12 +228,27 @@ if prompt or uploaded_file is not None:
                 if any(palavra in texto_lower for palavra in ["onde fica", "localização", "endereço", "fica onde"]):
                     info_tempo_real += f"\n\n{buscar_lugar(user_text)}"
                
+                # ========== INFORMAÇÕES DA ESCOLA ==========
+                info_escola = """
+[Informações da Escola - use SOMENTE quando o usuário perguntar]
+- Nome completo: Escola Municipal e Centro de Formação Joana Alves Lima
+- Data de fundação: 13 de julho de 2011
+- E-mail: joanalvesescola@gmail.com
+- Endereço: Rua Belmonte, 13 - Cajupiranga, Parnamirim - RN (Lote Jardim Blumenau)
+
+Regras importantes:
+- Só fale essas informações se a pessoa perguntar sobre a escola, o nome, a data de fundação, o e-mail ou a localização.
+- Não fique repetindo essas informações em toda resposta.
+- Responda de forma natural e amigável.
+"""
+               
                 system_prompt = (
                     "Você é a joanInhA, uma IA super rápida, sincera, descontraída e amigável. "
                     "Responda sempre em português do Brasil, de forma leve e direta. "
                     "Use o emoji 🐞 quando fizer sentido. "
                     "Quando receber uma imagem, analise com atenção e responda exatamente o que o usuário pediu.\n"
-                    "Você tem acesso a informações em tempo real (data, hora e clima). Use essas informações quando forem úteis."
+                    "Você tem acesso a informações em tempo real (data, hora e clima). Use essas informações quando forem úteis.\n"
+                    + info_escola
                     + info_tempo_real
                 )
                
