@@ -302,6 +302,14 @@ if prompt or uploaded_file is not None:
 
 Só fale essas informações se a pessoa perguntar sobre a escola, nome, fundação, e-mail ou endereço.
 """
+
+                info_criadores = """
+[Criadores da joanInhA - use SOMENTE quando o usuário perguntar]
+Esta inteligência artificial foi criada por: Alexandre, Gentil, Sully e João Pedro.
+
+Só mencione os criadores se a pessoa perguntar quem te criou, quem fez a joanInhA, quem são os desenvolvedores, etc.
+Responda de forma orgulhosa e amigável.
+"""
                
                 # ========== HUMOR IGUAL ANTES ==========
                 system_prompt = (
@@ -311,6 +319,7 @@ Só fale essas informações se a pessoa perguntar sobre a escola, nome, fundaç
                     "Quando receber uma imagem, analise com atenção e responda exatamente o que o usuário pediu.\n"
                     "Você tem acesso a informações em tempo real (data, hora e clima). Use essas informações quando forem úteis.\n"
                     + info_escola
+                    + info_criadores
                     + info_tempo_real
                 )
                
