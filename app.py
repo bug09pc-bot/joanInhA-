@@ -7,6 +7,7 @@ from groq import Groq
 from PIL import Image
 import io
 import locale
+import uuid
 
 try:
     locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
@@ -110,19 +111,68 @@ def buscar_lugar(nome_lugar):
     except Exception as e:
         return f"Erro ao buscar o lugar: {str(e)}"
 
+# ==================== ESTADO DAS CONVERSAS ====================
+if "conversas" not in st.session_state:
+    st.session_state.conversas = {}          # id -> {"titulo": str, "mensagens": list}
+if "conversa_atual_id" not in st.session_state:
+    st.session_state.conversa_atual_id = None
+
+def criar_nova_conversa():
+    novo_id = str(uuid.uuid4())
+    st.session_state.conversas[novo_id] = {
+        "titulo": "Nova conversa",
+        "mensagens": []
+    }
+    st.session_state.conversa_atual_id = novo_id
+    st.rerun()
+
+def carregar_conversa(cid):
+    st.session_state.conversa_atual_id = cid
+    st.rerun()
+
+# Se não tem nenhuma conversa, cria a primeira
+if not st.session_state.conversas:
+    criar_nova_conversa()
+
+# Pega a conversa atual
+conversa_atual = st.session_state.conversas[st.session_state.conversa_atual_id]
+historico = conversa_atual["mensagens"]
+
 # ==================== SIDEBAR ====================
 with st.sidebar:
     st.markdown("### 🐞 joanInhA")
     st.caption("A joaninha mais rápida e sincera")
     
-    if st.button("🗑️ Limpar Conversa", use_container_width=True):
-        st.session_state.historico = []
-        st.rerun()
+    # Botão Nova Conversa
+    if st.button("＋ Nova Conversa", use_container_width=True, type="primary"):
+        criar_nova_conversa()
     
     st.markdown("---")
+    st.markdown("**Histórico de Conversas**")
+    
+    # Lista das conversas (mais recentes primeiro)
+    for cid, conv in reversed(list(st.session_state.conversas.items())):
+        titulo = conv["titulo"]
+        if len(titulo) > 32:
+            titulo = titulo[:32] + "..."
+        
+        # Destaca a conversa atual
+        if cid == st.session_state.conversa_atual_id:
+            st.button(f"➤ {titulo}", key=f"btn_{cid}", use_container_width=True, type="secondary")
+        else:
+            if st.button(titulo, key=f"btn_{cid}", use_container_width=True):
+                carregar_conversa(cid)
+    
+    st.markdown("---")
+    
+    if st.button("🗑️ Limpar Conversa Atual", use_container_width=True):
+        st.session_state.conversas[st.session_state.conversa_atual_id]["mensagens"] = []
+        st.session_state.conversas[st.session_state.conversa_atual_id]["titulo"] = "Nova conversa"
+        st.rerun()
+    
     st.caption("Powered by Groq ⚡")
 
-# ==================== TÍTULO + LOGO CENTRALIZADA ====================
+# ==================== TÍTULO + LOGO ====================
 st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
 
 try:
@@ -148,11 +198,8 @@ if not groq_key:
     st.error("🔑 Configure a GROQ_API_KEY nos Secrets!")
     st.stop()
 
-if "historico" not in st.session_state:
-    st.session_state.historico = []
-
-# ==================== HISTÓRICO ====================
-for msg in st.session_state.historico:
+# ==================== HISTÓRICO DA CONVERSA ATUAL ====================
+for msg in historico:
     avatar = "🐞" if msg["role"] == "assistant" else "😊"
     with st.chat_message(msg["role"], avatar=avatar):
         if msg.get("image"):
@@ -200,7 +247,13 @@ if prompt or uploaded_file is not None:
         user_msg["base64"] = img_base64
         user_msg["mime"] = mime
    
-    st.session_state.historico.append(user_msg)
+    # Adiciona mensagem do usuário
+    historico.append(user_msg)
+    
+    # Atualiza o título da conversa com a primeira mensagem
+    if conversa_atual["titulo"] == "Nova conversa" and user_text:
+        titulo_curto = user_text[:40] + ("..." if len(user_text) > 40 else "")
+        conversa_atual["titulo"] = titulo_curto
    
     with st.chat_message("user", avatar="😊"):
         if uploaded_file:
@@ -228,7 +281,6 @@ if prompt or uploaded_file is not None:
                 if any(palavra in texto_lower for palavra in ["onde fica", "localização", "endereço", "fica onde"]):
                     info_tempo_real += f"\n\n{buscar_lugar(user_text)}"
                
-                # ========== INFORMAÇÕES DA ESCOLA ==========
                 info_escola = """
 [Informações da Escola - use SOMENTE quando o usuário perguntar]
 - Nome completo: Escola Municipal e Centro de Formação Joana Alves Lima
@@ -255,7 +307,7 @@ Regras importantes:
                 messages = [{"role": "system", "content": system_prompt}]
                
                 # Histórico antigo (só texto)
-                for m in st.session_state.historico[:-1]:
+                for m in historico[:-1]:
                     messages.append({
                         "role": m["role"],
                         "content": m["content"]
@@ -321,4 +373,6 @@ Regras importantes:
                 st.error(f"Ops, a joaninha tropeçou 🐞\n\nErro: {str(e)}")
                 resposta = "Desculpa, tive um probleminha técnico. Tenta de novo?"
    
-    st.session_state.historico.append({"role": "assistant", "content": resposta})
+    # Salva a resposta no histórico da conversa atual
+    historico.append({"role": "assistant", "content": resposta})
+    st.session_state.conversas[st.session_state.conversa_atual_id]["mensagens"] = historico
