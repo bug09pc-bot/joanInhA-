@@ -113,7 +113,7 @@ def buscar_lugar(nome_lugar):
 
 # ==================== ESTADO DAS CONVERSAS ====================
 if "conversas" not in st.session_state:
-    st.session_state.conversas = {}          # id -> {"titulo": str, "mensagens": list}
+    st.session_state.conversas = {}
 if "conversa_atual_id" not in st.session_state:
     st.session_state.conversa_atual_id = None
 
@@ -130,11 +130,21 @@ def carregar_conversa(cid):
     st.session_state.conversa_atual_id = cid
     st.rerun()
 
-# Se não tem nenhuma conversa, cria a primeira
+def excluir_conversa(cid):
+    if cid in st.session_state.conversas:
+        del st.session_state.conversas[cid]
+        
+        if st.session_state.conversa_atual_id == cid:
+            if st.session_state.conversas:
+                st.session_state.conversa_atual_id = list(st.session_state.conversas.keys())[-1]
+            else:
+                criar_nova_conversa()
+                return
+        st.rerun()
+
 if not st.session_state.conversas:
     criar_nova_conversa()
 
-# Pega a conversa atual
 conversa_atual = st.session_state.conversas[st.session_state.conversa_atual_id]
 historico = conversa_atual["mensagens"]
 
@@ -143,25 +153,29 @@ with st.sidebar:
     st.markdown("### 🐞 joanInhA")
     st.caption("A joaninha mais rápida e sincera")
     
-    # Botão Nova Conversa
     if st.button("＋ Nova Conversa", use_container_width=True, type="primary"):
         criar_nova_conversa()
     
     st.markdown("---")
     st.markdown("**Histórico de Conversas**")
     
-    # Lista das conversas (mais recentes primeiro)
     for cid, conv in reversed(list(st.session_state.conversas.items())):
         titulo = conv["titulo"]
-        if len(titulo) > 32:
-            titulo = titulo[:32] + "..."
+        if len(titulo) > 28:
+            titulo = titulo[:28] + "..."
         
-        # Destaca a conversa atual
-        if cid == st.session_state.conversa_atual_id:
-            st.button(f"➤ {titulo}", key=f"btn_{cid}", use_container_width=True, type="secondary")
-        else:
-            if st.button(titulo, key=f"btn_{cid}", use_container_width=True):
-                carregar_conversa(cid)
+        col_a, col_b = st.columns([5, 1])
+        
+        with col_a:
+            if cid == st.session_state.conversa_atual_id:
+                st.button(f"➤ {titulo}", key=f"load_{cid}", use_container_width=True, type="secondary")
+            else:
+                if st.button(titulo, key=f"load_{cid}", use_container_width=True):
+                    carregar_conversa(cid)
+        
+        with col_b:
+            if st.button("🗑️", key=f"del_{cid}", help="Excluir conversa"):
+                excluir_conversa(cid)
     
     st.markdown("---")
     
@@ -198,7 +212,7 @@ if not groq_key:
     st.error("🔑 Configure a GROQ_API_KEY nos Secrets!")
     st.stop()
 
-# ==================== HISTÓRICO DA CONVERSA ATUAL ====================
+# ==================== HISTÓRICO ====================
 for msg in historico:
     avatar = "🐞" if msg["role"] == "assistant" else "😊"
     with st.chat_message(msg["role"], avatar=avatar):
@@ -247,10 +261,8 @@ if prompt or uploaded_file is not None:
         user_msg["base64"] = img_base64
         user_msg["mime"] = mime
    
-    # Adiciona mensagem do usuário
     historico.append(user_msg)
     
-    # Atualiza o título da conversa com a primeira mensagem
     if conversa_atual["titulo"] == "Nova conversa" and user_text:
         titulo_curto = user_text[:40] + ("..." if len(user_text) > 40 else "")
         conversa_atual["titulo"] = titulo_curto
@@ -261,7 +273,7 @@ if prompt or uploaded_file is not None:
         st.markdown(user_text)
    
     with st.chat_message("assistant", avatar="🐞"):
-        with st.spinner("joanInhA analisando..." if uploaded_file else "joanInhA pensando..."):
+        with st.spinner("joanInhA pensando..." if not uploaded_file else "joanInhA analisando..."):
             try:
                 client = Groq(api_key=groq_key)
                
@@ -288,12 +300,10 @@ if prompt or uploaded_file is not None:
 - E-mail: joanalvesescola@gmail.com
 - Endereço: Rua Belmonte, 13 - Cajupiranga, Parnamirim - RN (Lote Jardim Blumenau)
 
-Regras importantes:
-- Só fale essas informações se a pessoa perguntar sobre a escola, o nome, a data de fundação, o e-mail ou a localização.
-- Não fique repetindo essas informações em toda resposta.
-- Responda de forma natural e amigável.
+Só fale essas informações se a pessoa perguntar sobre a escola, nome, fundação, e-mail ou endereço.
 """
                
+                # ========== HUMOR IGUAL ANTES ==========
                 system_prompt = (
                     "Você é a joanInhA, uma IA super rápida, sincera, descontraída e amigável. "
                     "Responda sempre em português do Brasil, de forma leve e direta. "
@@ -306,14 +316,12 @@ Regras importantes:
                
                 messages = [{"role": "system", "content": system_prompt}]
                
-                # Histórico antigo (só texto)
                 for m in historico[:-1]:
                     messages.append({
                         "role": m["role"],
                         "content": m["content"]
                     })
                 
-                # Última mensagem (com imagem se existir)
                 if img_base64:
                     messages.append({
                         "role": "user",
@@ -333,7 +341,6 @@ Regras importantes:
                         "content": user_text
                     })
                
-                # ========== MODELOS ==========
                 if img_base64:
                     modelos_visao = [
                         "qwen/qwen3.8-27b",
@@ -373,6 +380,5 @@ Regras importantes:
                 st.error(f"Ops, a joaninha tropeçou 🐞\n\nErro: {str(e)}")
                 resposta = "Desculpa, tive um probleminha técnico. Tenta de novo?"
    
-    # Salva a resposta no histórico da conversa atual
     historico.append({"role": "assistant", "content": resposta})
     st.session_state.conversas[st.session_state.conversa_atual_id]["mensagens"] = historico
