@@ -297,8 +297,10 @@ if prompt or uploaded_file is not None:
 - Data de fundação: 13 de julho de 2011
 - E-mail: joanalvesescola@gmail.com
 - Endereço: Rua Belmonte, 13 - Cajupiranga, Parnamirim - RN (Loteamento Jardim Blumenau)
-- Premios ganhos: Prêmio da Cidadania Digital em Ação 2024 5° Lugar Realizado pela SaferNet
-Só fale essas informações se a pessoa perguntar sobre a escola, nome, fundação, e-mail ou endereço.
+- Prêmios: Prêmio da Cidadania Digital em Ação 2024 (5° Lugar) realizado pela SaferNet
+- Nota do IDEB: A escola alcançou a nota 4,7 em sua primeira avaliação histórica como escola de tempo integral, ficando acima da média do município (que é de 4,0).
+- Destaques Acadêmicos: Alunas da unidade alcançaram repercussão estadual ao se classificarem para representar o Rio Grande do Norte na Olimpíada Nacional em História do Brasil.
+Só fale essas informações se a pessoa perguntar sobre a escola, nome, fundação, e-mail, endereço, IDEB, prêmios ou destaques.
 """
 
                 info_criadores = """
