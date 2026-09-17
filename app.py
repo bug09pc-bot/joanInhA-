@@ -188,7 +188,6 @@ with st.sidebar:
 
 # ==================== TÍTULO + LOGO ====================
 st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
-
 try:
     st.image("logo.png", width=160)
 except:
@@ -198,7 +197,6 @@ st.markdown("""
     <h1 style="margin: 10px 0 0 0; font-size: 2.6rem; font-weight: 700;">joanInhA</h1>
     <p style="margin: 0; color: #666; font-size: 1.05rem;">A Inteligência Artificial da Escola Joana Alves ✨</p>
 """, unsafe_allow_html=True)
-
 st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -298,21 +296,47 @@ if prompt or uploaded_file is not None:
 - Nome completo: Escola Municipal e Centro de Formação Joana Alves Lima
 - Data de fundação: 13 de julho de 2011
 - E-mail: joanalvesescola@gmail.com
-- Endereço: Rua Belmonte, 13 - Cajupiranga, Parnamirim - RN (Lote Jardim Blumenau)
+- Endereço: Rua Belmonte, 13 - Cajupiranga, Parnamirim - RN (Loteamento Jardim Blumenau)
 - Premios ganhos: Prêmio da Cidadania Digital em Ação 2024 5° Lugar Realizado pela SaferNet
-
 Só fale essas informações se a pessoa perguntar sobre a escola, nome, fundação, e-mail ou endereço.
 """
 
                 info_criadores = """
 [Criadores da joanInhA - use SOMENTE quando o usuário perguntar]
-Esta inteligência artificial foi criada por: Alexandre Raphael Soares Costa, Gentil Sully da Rocha Andrade João Pedro Alves De Lima Silva.
-
+Esta inteligência artificial foi criada por: Alexandre Raphael Soares Costa, Gentil Sully da Rocha Andrade e João Pedro Alves De Lima Silva.
 Só mencione os criadores se a pessoa perguntar quem te criou, quem fez a joanInhA, quem são os desenvolvedores, etc.
 Responda de forma orgulhosa e amigável.
 """
+
+                info_bncc = """
+[Conhecimento da BNCC - Base Nacional Comum Curricular - use quando o usuário perguntar sobre currículo, competências, habilidades, educação infantil, ensino fundamental, ensino médio, direitos de aprendizagem etc.]
+
+A BNCC é o documento normativo que define as aprendizagens essenciais que todos os alunos da Educação Básica devem desenvolver. Ela é referência obrigatória para os currículos de todas as escolas do Brasil.
+
+### As 10 Competências Gerais da Educação Básica (o coração da BNCC):
+
+1. Valorizar e utilizar os conhecimentos historicamente construídos sobre o mundo físico, social, cultural e digital.
+2. Exercitar a curiosidade intelectual e recorrer à abordagem das ciências (investigação, reflexão, análise crítica, imaginação e criatividade).
+3. Valorizar e fruir as diversas manifestações artísticas e culturais.
+4. Utilizar diferentes linguagens (verbal, corporal, visual, sonora e digital).
+5. Compreender, utilizar e criar tecnologias digitais de forma crítica, significativa, reflexiva e ética.
+6. Valorizar a diversidade de saberes e vivências culturais e se apropriar de conhecimentos para o mundo do trabalho e o projeto de vida.
+7. Argumentar com base em fatos, dados e informações confiáveis, respeitando direitos humanos e consciência socioambiental.
+8. Conhecer-se, apreciar-se e cuidar da saúde física e emocional.
+9. Exercitar a empatia, o diálogo, a resolução de conflitos e a cooperação.
+10. Agir com autonomia, responsabilidade, flexibilidade, resiliência e determinação.
+
+### Estrutura da BNCC:
+
+- **Educação Infantil**: organizada em 5 Campos de Experiências + 6 Direitos de Aprendizagem e Desenvolvimento (Conviver, Brincar, Participar, Explorar, Expressar, Conhecer-se). Objetivos por faixa etária (bebês, crianças bem pequenas e crianças pequenas).
+- **Ensino Fundamental**: organizado por Áreas do Conhecimento (Linguagens, Matemática, Ciências da Natureza, Ciências Humanas e Ensino Religioso) → Componentes Curriculares → Unidades Temáticas → Objetos de Conhecimento → Habilidades (códigos alfanuméricos tipo EF01LP01).
+- **Ensino Médio**: organizado por Áreas do Conhecimento + Formação Geral Básica + Itinerários Formativos.
+
+A BNCC foca no desenvolvimento de **competências** (saber + saber fazer), e não apenas em conteúdos. Ela tem compromisso com a educação integral e com a equidade.
+
+Use essas informações de forma natural e didática quando o assunto for educação, currículo, competências ou BNCC. Não invente habilidades ou códigos que não existem.
+"""
                
-                # ========== HUMOR IGUAL ANTES ==========
                 system_prompt = (
                     "Você é a joanInhA, uma IA super rápida, sincera, descontraída e amigável. "
                     "Responda sempre em português do Brasil, de forma leve e direta. "
@@ -321,6 +345,7 @@ Responda de forma orgulhosa e amigável.
                     "Você tem acesso a informações em tempo real (data, hora e clima). Use essas informações quando forem úteis.\n"
                     + info_escola
                     + info_criadores
+                    + info_bncc
                     + info_tempo_real
                 )
                
