@@ -293,14 +293,44 @@ if prompt or uploaded_file is not None:
                
                 info_escola = """
 [Informações da Escola - use SOMENTE quando o usuário perguntar]
-- Nome completo: Escola Municipal e Centro de Formação Joana Alves Lima
+- Nome completo: Escola Municipal e Centro de Formação Joana Alves de Lima
+- Portaria de Criação: Portaria nº 1634/2013 (Diário Oficial do Município de Parnamirim/RN)
 - Data de fundação: 13 de julho de 2011
 - E-mail: joanalvesescola@gmail.com
 - Endereço: Rua Belmonte, 13 - Cajupiranga, Parnamirim - RN (Loteamento Jardim Blumenau)
-- Prêmios: Prêmio da Cidadania Digital em Ação 2024 (5° Lugar) realizado pela SaferNet
-- Nota do IDEB: A escola alcançou a nota 4,7 em sua primeira avaliação histórica como escola de tempo integral, ficando acima da média do município (que é de 4,0).
-- Destaques Acadêmicos: Alunas da unidade alcançaram repercussão estadual ao se classificarem para representar o Rio Grande do Norte na Olimpíada Nacional em História do Brasil.
-Só fale essas informações se a pessoa perguntar sobre a escola, nome, fundação, e-mail, endereço, IDEB, prêmios ou destaques.
+- Rede de Ensino: Rede Pública Municipal de Parnamirim/RN
+- Etapa de Ensino: Ensino Fundamental (Fundamental 2)
+- Localização: Cajupiranga, Parnamirim - RN
+
+### Reconhecimento, Indicadores e Premiações
+- IDEB: Nota 4,7 (4ª colocação no ranking municipal de Parnamirim). Foi a primeira avaliação histórica como escola de tempo integral, ficando acima da média do município (4,0).
+- Olimpíada Nacional de História do Brasil (ONHB): A escola já representou o Rio Grande do Norte por 2 vezes na última fase da competição.
+- Prêmio Cidadania Digital: Conquistou premiação de âmbito nacional no Prêmio Cidadania Digital em Ação 2024 (5º Lugar) realizado pela SaferNet, destacando-se pelo uso consciente e inovador da tecnologia.
+
+### Funcionamento e Rotina em Tempo Integral
+- Horário de funcionamento: das 8h40 às 17h30
+- Carga Horária Diária: 8 tempos de aula + 1 oficina por dia (todos com duração de 50 minutos)
+- Turno Matutino: 3 horários de aula + 1 oficina
+- Turno Vespertino (a partir das 13h): 5 horários de aula
+- Momentos de Intervalo e Alimentação:
+  - 09h30: Lanche da manhã
+  - 12h05: Almoço
+  - 15h30: Lanche da tarde
+
+### Grade Curricular e Disciplinas
+Disciplinas Tradicionais: Língua Portuguesa, Matemática, História, Geografia, Ciências, Inglês, Educação Física, Artes e Ensino Religioso.
+Disciplinas Eletivas / Diversificadas: Teatro, Cultura Brasileira, Cultura e Tradição, Matemática Básica, Esporte e Saúde, English by Game, Cidadania Digital e Botânica.
+Oficinas Oferecidas: Cinema, Game, Vôlei, Mundo Curioso, Reforço e Recreação.
+
+### Infraestrutura e Recursos Físicos
+- Salas de aula climatizadas
+- Laboratório de informática
+- Sala de vídeo
+- Biblioteca
+- Campinho de futebol de areia
+- Campo de vôlei de areia
+
+Só fale essas informações se a pessoa perguntar sobre a escola, nome, fundação, e-mail, endereço, IDEB, prêmios, horários, grade, oficinas, infraestrutura ou destaques.
 """
 
                 info_criadores = """
