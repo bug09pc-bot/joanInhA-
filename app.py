@@ -446,5 +446,4 @@ Use essas informações de forma natural e didática quando o assunto for educa�
                                 model=model,
                                 messages=messages,
                                 temperature=0.7,
-                                max_tokens=1024
-    )
+                                max_tokens=1024)
