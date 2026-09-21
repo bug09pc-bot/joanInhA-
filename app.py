@@ -115,9 +115,7 @@ def buscar_lugar(nome_lugar):
 def gerar_imagem(prompt):
     """Gera imagem usando Pollinations.ai (gratuito e sem chave)"""
     try:
-        # Codifica o prompt para URL
         prompt_encoded = quote(prompt)
-        # URL da imagem (pode ajustar width e height se quiser)
         image_url = f"https://image.pollinations.ai/prompt/{prompt_encoded}?width=1024&height=1024&nologo=true"
         return image_url
     except Exception as e:
@@ -432,6 +430,9 @@ Use essas informações de forma natural e didática quando o assunto for educa�
                     })
                
                 # Gera a resposta de texto
+                resposta = None
+                modelo_usado = None
+
                 if img_base64:
                     modelos_visao = [
                         "qwen/qwen3.8-27b",
@@ -439,7 +440,6 @@ Use essas informações de forma natural e didática quando o assunto for educa�
                         "meta-llama/llama-4-scout-17b-16e-instruct",
                     ]
                     
-                    resposta = None
                     for model in modelos_visao:
                         try:
                             response = client.chat.completions.create(
@@ -447,4 +447,6 @@ Use essas informações de forma natural e didática quando o assunto for educa�
                                 messages=messages,
                                 temperature=0.7,
                                 max_tokens=1024
-    )
+                            )
+                            resposta = response.choices[0].message.content
+                  
