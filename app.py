@@ -122,7 +122,6 @@ def gerar_imagem(prompt):
         return None
 
 def extrair_texto_pdf(arquivo):
-    """Extrai texto de um PDF"""
     try:
         reader = PdfReader(arquivo)
         texto = ""
@@ -246,7 +245,7 @@ for msg in historico:
             st.caption(f"📄 PDF enviado: {msg['pdf_name']}")
         st.markdown(msg["content"])
 
-# ==================== INPUT COM SUPORTE A IMAGEM + PDF ====================
+# ==================== INPUT ====================
 chat_input = st.chat_input(
     "Fala aí, o que tá rolando? 🐞 (pode enviar imagem ou PDF)",
     accept_file=True,
@@ -258,12 +257,11 @@ if chat_input:
     user_text = chat_input.text if chat_input.text else ""
     uploaded_file = chat_input.files[0] if chat_input.files else None
 
-    # Se não mandou texto nem arquivo, não faz nada
     if not user_text and not uploaded_file:
         st.stop()
 
     if not user_text:
-        if uploaded_file and uploaded_file.type == "application/pdf":
+        if uploaded_file and (uploaded_file.type == "application/pdf" or uploaded_file.name.lower().endswith(".pdf")):
             user_text = "Analisa este PDF e me ajuda com o planejamento de aula."
         else:
             user_text = "Analisa essa imagem e me conta o que você vê."
@@ -276,14 +274,12 @@ if chat_input:
     nome_pdf = None
     
     if uploaded_file:
-        # É PDF?
         if uploaded_file.type == "application/pdf" or uploaded_file.name.lower().endswith(".pdf"):
             texto_pdf = extrair_texto_pdf(uploaded_file)
             nome_pdf = uploaded_file.name
             user_msg["pdf_name"] = nome_pdf
             user_msg["pdf_text"] = texto_pdf
         else:
-            # É imagem
             image = Image.open(uploaded_file).convert("RGB")
             
             max_size = 1024
@@ -417,11 +413,9 @@ A BNCC foca no desenvolvimento de **competências** (saber + saber fazer), e nã
 
 Use essas informações de forma natural e didática quando o assunto for educação, currículo, competências ou BNCC. Não invente habilidades ou códigos que não existem.
 """
-               
-                # Se tiver PDF, adiciona o conteúdo no prompt
+
                 conteudo_extra = ""
                 if texto_pdf:
-                    # Limita o tamanho pra não estourar o contexto
                     texto_limitado = texto_pdf[:12000] if len(texto_pdf) > 12000 else texto_pdf
                     conteudo_extra = f"\n\n[CONTEÚDO DO PDF ENVIADO PELO USUÁRIO]:\n{texto_limitado}\n\nUse esse conteúdo para ajudar o usuário com o planejamento de aula, atividades, objetivos, metodologia, etc."
 
@@ -437,4 +431,11 @@ Use essas informações de forma natural e didática quando o assunto for educa�
                     + info_escola
                     + info_criadores
                     + info_bncc
-                  
+                    + info_tempo_real
+                    + conteudo_extra
+                )
+               
+                messages = [{"role": "system", "content": system_prompt}]
+               
+                for m in historico[:-1]:
+                    messa
