@@ -297,7 +297,7 @@ if prompt or uploaded_file is not None:
 - Portaria de Criação: Portaria nº 1634/2013 (Diário Oficial do Município de Parnamirim/RN)
 - Data de fundação: 13 de julho de 2011
 - E-mail: joanalvesescola@gmail.com
-- Endereço: Rua Belmonte, 13 - Cajupiranga, Parnamirim - RN (Loteamento Jardim Blumenau)
+- Endereço: Rua Belmonte,  - Cajupiranga, Parnamirim - RN (Loteamento Jardim Blumenau)
 - Rede de Ensino: Rede Pública Municipal de Parnamirim/RN
 - Etapa de Ensino: Ensino Fundamental (Fundamental 2)
 - Localização: Cajupiranga, Parnamirim - RN
