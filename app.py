@@ -329,7 +329,7 @@ Só fale essas informações se a pessoa perguntar sobre a escola, nome, fundaç
 """
                 info_criadores = """
 [Criadores da joanInhA - use SOMENTE quando o usuário perguntar]
-Esta inteligência artificial foi criada pelos estudantes do 7º ano: Alexandre Raphael Soares Costa, Gentil Sully da Rocha Andrade e João Pedro Alves De Lima Silva.
+Esta inteligência artificial foi criada: pelos estudantes do 7º ano Alexandre Raphael Soares Costa, Gentil Sully da Rocha Andrade e João Pedro Alves De Lima Silva.
 Orientador: Hery Tiago Fernandes de OLiveira
 Só mencione os criadores se a pessoa perguntar quem te criou, quem fez a joanInhA, quem são os desenvolvedores, etc.
 Responda de forma orgulhosa e amigável.
