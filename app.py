@@ -113,12 +113,10 @@ def buscar_lugar(nome_lugar):
         return f"Erro ao buscar o lugar: {str(e)}"
 
 def gerar_imagem(prompt):
-    """Gera imagem usando Pollinations.ai (gratuito e sem chave)"""
+    """Gera imagem usando Flux (gratuito e sem chave) - qualidade bem melhor"""
     try:
-        # Codifica o prompt para URL
         prompt_encoded = quote(prompt)
-        # URL da imagem (pode ajustar width e height se quiser)
-        image_url = f"https://image.pollinations.ai/prompt/{prompt_encoded}?width=1024&height=1024&nologo=true"
+        image_url = f"https://image.pollinations.ai/prompt/{prompt_encoded}?width=1024&height=1024&model=flux&nologo=true&enhance=true"
         return image_url
     except Exception as e:
         return None
@@ -196,7 +194,7 @@ with st.sidebar:
         st.session_state.conversas[st.session_state.conversa_atual_id]["titulo"] = "Nova conversa"
         st.rerun()
     
-    st.caption("Powered by Groq ⚡ + Pollinations 🎨")
+    st.caption("Powered by Groq ⚡ + Flux 🎨")
 
 # ==================== TÍTULO + LOGO ====================
 st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
@@ -235,22 +233,17 @@ for msg in historico:
             st.image(msg["generated_image"], use_container_width=True)
         st.markdown(msg["content"])
 
-# ==================== INPUTS ====================
-col1, col2 = st.columns([5, 1])
-with col1:
-    prompt = st.chat_input("Fala aí, o que tá rolando? 🐞")
-with col2:
-    uploaded_file = st.file_uploader(
-        "📷",
-        type=["png", "jpg", "jpeg", "webp"],
-        label_visibility="collapsed",
-        key="uploader"
-    )
+# ==================== INPUT MELHORADO ====================
+chat_input = st.chat_input(
+    "Fala aí, o que tá rolando? 🐞",
+    accept_file=True,
+    file_type=["png", "jpg", "jpeg", "webp"]
+)
 
 # ==================== PROCESSAR ====================
-if prompt or uploaded_file is not None:
-   
-    user_text = prompt if prompt else "Analisa essa imagem e me conta o que você vê."
+if chat_input:
+    user_text = chat_input.text if chat_input.text else "Analisa essa imagem e me conta o que você vê."
+    uploaded_file = chat_input.files[0] if chat_input.files else None
    
     user_msg = {"role": "user", "content": user_text}
    
@@ -285,7 +278,7 @@ if prompt or uploaded_file is not None:
         st.markdown(user_text)
    
     with st.chat_message("assistant", avatar="🐞"):
-        with st.spinner("joanInhA pensando..." if not uploaded_file else "joanInhA analisando..."):
+        with st.spinner("joanInhA pensando..." if not uploaded_file else "joanInhA analisando a imagem..."):
             try:
                 client = Groq(api_key=groq_key)
                
@@ -293,7 +286,6 @@ if prompt or uploaded_file is not None:
                 
                 texto_lower = user_text.lower()
                 
-                # Detecta se o usuário quer gerar uma imagem
                 quer_imagem = any(palavra in texto_lower for palavra in [
                     "cria uma imagem", "crie uma imagem", "gera uma imagem", "gere uma imagem",
                     "desenha", "desenhe", "faz uma imagem", "faça uma imagem",
@@ -431,7 +423,7 @@ Use essas informações de forma natural e didática quando o assunto for educa�
                         "content": user_text
                     })
                
-                # Gera a resposta de texto
+                # ========== MODELOS ==========
                 if img_base64:
                     modelos_visao = [
                         "qwen/qwen3.8-27b",
@@ -453,49 +445,4 @@ Use essas informações de forma natural e didática quando o assunto for educa�
                         except:
                             continue
                     
-                    if resposta is None:
-                        resposta = "Desculpa, não consegui ver a imagem agora. Sua conta do Groq não tem acesso a modelos de visão 🐞"
-                else:
-                    model = "openai/gpt-oss-20b"
-                    response = client.chat.completions.create(
-                        model=model,
-                        messages=messages,
-                        temperature=0.7,
-                        max_tokens=1024
-                    )
-                    resposta = response.choices[0].message.content
-               
-                # ========== GERAÇÃO DE IMAGEM ==========
-                generated_image_url = None
-                if quer_imagem and not uploaded_file:
-                    # Extrai um bom prompt de imagem
-                    prompt_imagem = user_text
-                    # Remove frases comuns de pedido
-                    for frase in ["cria uma imagem de", "crie uma imagem de", "gera uma imagem de", 
-                                  "gere uma imagem de", "desenha", "desenhe", "faz uma imagem de",
-                                  "faça uma imagem de", "me mostra uma imagem de", "imagem de"]:
-                        prompt_imagem = prompt_imagem.lower().replace(frase, "").strip()
-                    
-                    if not prompt_imagem:
-                        prompt_imagem = user_text
-                    
-                    generated_image_url = gerar_imagem(prompt_imagem)
-                    
-                    if generated_image_url:
-                        st.image(generated_image_url, use_container_width=True)
-                        resposta = f"Pronto! Aqui está a imagem que você pediu 🐞✨\n\n{resposta}"
-               
-                st.markdown(resposta)
-               
-            except Exception as e:
-                st.error(f"Ops, a joaninha tropeçou 🐞\n\nErro: {str(e)}")
-                resposta = "Desculpa, tive um probleminha técnico. Tenta de novo?"
-                generated_image_url = None
-   
-    # Salva no histórico
-    assistant_msg = {"role": "assistant", "content": resposta}
-    if generated_image_url:
-        assistant_msg["generated_image"] = generated_image_url
-    
-    historico.append(assistant_msg)
-    st.session_state.conversas[st.session_state.conversa_atual_id]["mensagens"] = historico
+                    if
