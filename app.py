@@ -9,6 +9,7 @@ import io
 import locale
 import uuid
 from urllib.parse import quote
+from pypdf import PdfReader
 
 try:
     locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
@@ -113,13 +114,23 @@ def buscar_lugar(nome_lugar):
         return f"Erro ao buscar o lugar: {str(e)}"
 
 def gerar_imagem(prompt):
-    """Gera imagem usando Flux (gratuito e sem chave) - qualidade bem melhor"""
     try:
         prompt_encoded = quote(prompt)
         image_url = f"https://image.pollinations.ai/prompt/{prompt_encoded}?width=1024&height=1024&model=flux&nologo=true&enhance=true"
         return image_url
-    except Exception as e:
+    except:
         return None
+
+def extrair_texto_pdf(arquivo):
+    """Extrai texto de um PDF"""
+    try:
+        reader = PdfReader(arquivo)
+        texto = ""
+        for pagina in reader.pages:
+            texto += pagina.extract_text() + "\n"
+        return texto.strip()
+    except Exception as e:
+        return f"[Erro ao ler o PDF: {str(e)}]"
 
 # ==================== ESTADO DAS CONVERSAS ====================
 if "conversas" not in st.session_state:
@@ -231,40 +242,62 @@ for msg in historico:
                 pass
         if msg.get("generated_image"):
             st.image(msg["generated_image"], use_container_width=True)
+        if msg.get("pdf_name"):
+            st.caption(f"📄 PDF enviado: {msg['pdf_name']}")
         st.markdown(msg["content"])
 
-# ==================== INPUT MELHORADO ====================
+# ==================== INPUT COM SUPORTE A IMAGEM + PDF ====================
 chat_input = st.chat_input(
-    "Fala aí, o que tá rolando? 🐞",
+    "Fala aí, o que tá rolando? 🐞 (pode enviar imagem ou PDF)",
     accept_file=True,
-    file_type=["png", "jpg", "jpeg", "webp"]
+    file_type=["png", "jpg", "jpeg", "webp", "pdf"]
 )
 
 # ==================== PROCESSAR ====================
 if chat_input:
-    user_text = chat_input.text if chat_input.text else "Analisa essa imagem e me conta o que você vê."
+    user_text = chat_input.text if chat_input.text else ""
     uploaded_file = chat_input.files[0] if chat_input.files else None
-   
+
+    # Se não mandou texto nem arquivo, não faz nada
+    if not user_text and not uploaded_file:
+        st.stop()
+
+    if not user_text:
+        if uploaded_file and uploaded_file.type == "application/pdf":
+            user_text = "Analisa este PDF e me ajuda com o planejamento de aula."
+        else:
+            user_text = "Analisa essa imagem e me conta o que você vê."
+
     user_msg = {"role": "user", "content": user_text}
    
     img_base64 = None
     mime = None
+    texto_pdf = None
+    nome_pdf = None
     
     if uploaded_file:
-        image = Image.open(uploaded_file).convert("RGB")
-        
-        max_size = 1024
-        if max(image.size) > max_size:
-            image.thumbnail((max_size, max_size))
-        
-        buffered = io.BytesIO()
-        image.save(buffered, format="JPEG", quality=85)
-        img_base64 = base64.b64encode(buffered.getvalue()).decode()
-        mime = "image/jpeg"
-       
-        user_msg["image"] = uploaded_file
-        user_msg["base64"] = img_base64
-        user_msg["mime"] = mime
+        # É PDF?
+        if uploaded_file.type == "application/pdf" or uploaded_file.name.lower().endswith(".pdf"):
+            texto_pdf = extrair_texto_pdf(uploaded_file)
+            nome_pdf = uploaded_file.name
+            user_msg["pdf_name"] = nome_pdf
+            user_msg["pdf_text"] = texto_pdf
+        else:
+            # É imagem
+            image = Image.open(uploaded_file).convert("RGB")
+            
+            max_size = 1024
+            if max(image.size) > max_size:
+                image.thumbnail((max_size, max_size))
+            
+            buffered = io.BytesIO()
+            image.save(buffered, format="JPEG", quality=85)
+            img_base64 = base64.b64encode(buffered.getvalue()).decode()
+            mime = "image/jpeg"
+           
+            user_msg["image"] = uploaded_file
+            user_msg["base64"] = img_base64
+            user_msg["mime"] = mime
    
     historico.append(user_msg)
     
@@ -274,11 +307,14 @@ if chat_input:
    
     with st.chat_message("user", avatar="😊"):
         if uploaded_file:
-            st.image(uploaded_file, width=320)
+            if nome_pdf:
+                st.caption(f"📄 PDF enviado: **{nome_pdf}**")
+            else:
+                st.image(uploaded_file, width=320)
         st.markdown(user_text)
    
     with st.chat_message("assistant", avatar="🐞"):
-        with st.spinner("joanInhA pensando..." if not uploaded_file else "joanInhA analisando a imagem..."):
+        with st.spinner("joanInhA lendo o material..." if texto_pdf else ("joanInhA analisando a imagem..." if img_base64 else "joanInhA pensando...")):
             try:
                 client = Groq(api_key=groq_key)
                
@@ -382,67 +418,23 @@ A BNCC foca no desenvolvimento de **competências** (saber + saber fazer), e nã
 Use essas informações de forma natural e didática quando o assunto for educação, currículo, competências ou BNCC. Não invente habilidades ou códigos que não existem.
 """
                
+                # Se tiver PDF, adiciona o conteúdo no prompt
+                conteudo_extra = ""
+                if texto_pdf:
+                    # Limita o tamanho pra não estourar o contexto
+                    texto_limitado = texto_pdf[:12000] if len(texto_pdf) > 12000 else texto_pdf
+                    conteudo_extra = f"\n\n[CONTEÚDO DO PDF ENVIADO PELO USUÁRIO]:\n{texto_limitado}\n\nUse esse conteúdo para ajudar o usuário com o planejamento de aula, atividades, objetivos, metodologia, etc."
+
                 system_prompt = (
                     "Você é a joanInhA, uma IA super rápida, sincera, descontraída e amigável. "
                     "Responda sempre em português do Brasil, de forma leve e direta. "
                     "Use o emoji 🐞 quando fizer sentido. "
                     "Quando receber uma imagem, analise com atenção e responda exatamente o que o usuário pediu.\n"
+                    "Quando receber um PDF, leia o conteúdo e ajude o usuário a criar ou melhorar planejamentos de aula, atividades, objetivos de aprendizagem, metodologia, avaliação, etc.\n"
                     "IMPORTANTE: Nunca use tags HTML (como <br>, <p>, <div>, etc). Use apenas Markdown puro para formatação (listas com -, negrito com **, títulos com ###).\n"
                     "Você tem acesso a informações em tempo real (data, hora e clima). Use essas informações quando forem úteis.\n"
                     "Você também consegue criar imagens! Quando o usuário pedir para criar, gerar ou desenhar uma imagem, responda de forma animada e confirme que está criando.\n"
                     + info_escola
                     + info_criadores
                     + info_bncc
-                    + info_tempo_real
-                )
-               
-                messages = [{"role": "system", "content": system_prompt}]
-               
-                for m in historico[:-1]:
-                    messages.append({
-                        "role": m["role"],
-                        "content": m["content"]
-                    })
-                
-                if img_base64:
-                    messages.append({
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": user_text},
-                            {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:{mime};base64,{img_base64}"
-                                }
-                            }
-                        ]
-                    })
-                else:
-                    messages.append({
-                        "role": "user",
-                        "content": user_text
-                    })
-               
-                # ========== MODELOS ==========
-                if img_base64:
-                    modelos_visao = [
-                        "qwen/qwen3.8-27b",
-                        "qwen/qwen3.6-27b",
-                        "meta-llama/llama-4-scout-17b-16e-instruct",
-                    ]
-                    
-                    resposta = None
-                    for model in modelos_visao:
-                        try:
-                            response = client.chat.completions.create(
-                                model=model,
-                                messages=messages,
-                                temperature=0.7,
-                                max_tokens=1024
-                            )
-                            resposta = response.choices[0].message.content
-                            break
-                        except:
-                            continue
-                    
-                    if
+                  
