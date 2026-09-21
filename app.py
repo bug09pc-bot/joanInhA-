@@ -301,12 +301,10 @@ if prompt or uploaded_file is not None:
 - Rede de Ensino: Rede Pública Municipal de Parnamirim/RN
 - Etapa de Ensino: Ensino Fundamental (Fundamental 2)
 - Localização: Cajupiranga, Parnamirim - RN
-
 ### Reconhecimento, Indicadores e Premiações
 - IDEB: Nota 4,7 (4ª colocação no ranking municipal de Parnamirim). Foi a primeira avaliação histórica como escola de tempo integral, ficando acima da média do município (4,0).
 - Olimpíada Nacional de História do Brasil (ONHB): A escola já representou o Rio Grande do Norte por 2 vezes na última fase da competição.
 - Prêmio Cidadania Digital: Conquistou premiação de âmbito nacional no Prêmio Cidadania Digital em Ação 2024 (5º Lugar) realizado pela SaferNet, destacando-se pelo uso consciente e inovador da tecnologia.
-
 ### Funcionamento e Rotina em Tempo Integral
 - Horário de funcionamento: das 8h40 às 17h30
 - Carga Horária Diária: 8 tempos de aula + 1 oficina por dia (todos com duração de 50 minutos)
@@ -316,12 +314,10 @@ if prompt or uploaded_file is not None:
   - 09h30: Lanche da manhã
   - 12h05: Almoço
   - 15h30: Lanche da tarde
-
 ### Grade Curricular e Disciplinas
 Disciplinas Tradicionais: Língua Portuguesa, Matemática, História, Geografia, Ciências, Inglês, Educação Física, Artes e Ensino Religioso.
 Disciplinas Eletivas / Diversificadas: Teatro, Cultura Brasileira, Cultura e Tradição, Matemática Básica, Esporte e Saúde, English by Game, Cidadania Digital e Botânica.
 Oficinas Oferecidas: Cinema, Game, Vôlei, Mundo Curioso, Reforço e Recreação.
-
 ### Infraestrutura e Recursos Físicos
 - Salas de aula climatizadas
 - Laboratório de informática
@@ -329,24 +325,19 @@ Oficinas Oferecidas: Cinema, Game, Vôlei, Mundo Curioso, Reforço e Recreação
 - Biblioteca
 - Campinho de futebol de areia
 - Campo de vôlei de areia
-
 Só fale essas informações se a pessoa perguntar sobre a escola, nome, fundação, e-mail, endereço, IDEB, prêmios, horários, grade, oficinas, infraestrutura ou destaques.
 """
-
                 info_criadores = """
 [Criadores da joanInhA - use SOMENTE quando o usuário perguntar]
-Esta inteligência artificial foi criada por: Alexandre Raphael Soares Costa, Gentil Sully da Rocha Andrade e João Pedro Alves De Lima Silva.
+Esta inteligência artificial foi criada pelos estudantes do 7º ano: Alexandre Raphael Soares Costa, Gentil Sully da Rocha Andrade e João Pedro Alves De Lima Silva.
+Orientador: [COLOQUE O NOME DO ORIENTADOR AQUI]
 Só mencione os criadores se a pessoa perguntar quem te criou, quem fez a joanInhA, quem são os desenvolvedores, etc.
 Responda de forma orgulhosa e amigável.
 """
-
                 info_bncc = """
 [Conhecimento da BNCC - Base Nacional Comum Curricular - use quando o usuário perguntar sobre currículo, competências, habilidades, educação infantil, ensino fundamental, ensino médio, direitos de aprendizagem etc.]
-
 A BNCC é o documento normativo que define as aprendizagens essenciais que todos os alunos da Educação Básica devem desenvolver. Ela é referência obrigatória para os currículos de todas as escolas do Brasil.
-
 ### As 10 Competências Gerais da Educação Básica (o coração da BNCC):
-
 1. Valorizar e utilizar os conhecimentos historicamente construídos sobre o mundo físico, social, cultural e digital.
 2. Exercitar a curiosidade intelectual e recorrer à abordagem das ciências (investigação, reflexão, análise crítica, imaginação e criatividade).
 3. Valorizar e fruir as diversas manifestações artísticas e culturais.
@@ -357,15 +348,11 @@ A BNCC é o documento normativo que define as aprendizagens essenciais que todos
 8. Conhecer-se, apreciar-se e cuidar da saúde física e emocional.
 9. Exercitar a empatia, o diálogo, a resolução de conflitos e a cooperação.
 10. Agir com autonomia, responsabilidade, flexibilidade, resiliência e determinação.
-
 ### Estrutura da BNCC:
-
 - **Educação Infantil**: organizada em 5 Campos de Experiências + 6 Direitos de Aprendizagem e Desenvolvimento (Conviver, Brincar, Participar, Explorar, Expressar, Conhecer-se). Objetivos por faixa etária (bebês, crianças bem pequenas e crianças pequenas).
 - **Ensino Fundamental**: organizado por Áreas do Conhecimento (Linguagens, Matemática, Ciências da Natureza, Ciências Humanas e Ensino Religioso) → Componentes Curriculares → Unidades Temáticas → Objetos de Conhecimento → Habilidades (códigos alfanuméricos tipo EF01LP01).
 - **Ensino Médio**: organizado por Áreas do Conhecimento + Formação Geral Básica + Itinerários Formativos.
-
 A BNCC foca no desenvolvimento de **competências** (saber + saber fazer), e não apenas em conteúdos. Ela tem compromisso com a educação integral e com a equidade.
-
 Use essas informações de forma natural e didática quando o assunto for educação, currículo, competências ou BNCC. Não invente habilidades ou códigos que não existem.
 """
                
