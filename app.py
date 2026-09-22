@@ -448,3 +448,54 @@ Use essas informações de forma natural e didática quando o assunto for educa�
                                 temperature=0.7,
                                 max_tokens=1024
                             )
+                            resposta = response.choices[0].message.content
+                            break
+                        except:
+                            continue
+                    
+                    if resposta is None:
+                        resposta = "Desculpa, não consegui ver a imagem agora. Sua conta do Groq não tem acesso a modelos de visão 🐞"
+                else:
+                    model = "openai/gpt-oss-20b"
+                    response = client.chat.completions.create(
+                        model=model,
+                        messages=messages,
+                        temperature=0.7,
+                        max_tokens=1024
+                    )
+                    resposta = response.choices[0].message.content
+               
+                # ========== GERAÇÃO DE IMAGEM ==========
+                generated_image_url = None
+                if quer_imagem and not uploaded_file:
+                    # Extrai um bom prompt de imagem
+                    prompt_imagem = user_text
+                    # Remove frases comuns de pedido
+                    for frase in ["cria uma imagem de", "crie uma imagem de", "gera uma imagem de", 
+                                  "gere uma imagem de", "desenha", "desenhe", "faz uma imagem de",
+                                  "faça uma imagem de", "me mostra uma imagem de", "imagem de"]:
+                        prompt_imagem = prompt_imagem.lower().replace(frase, "").strip()
+                    
+                    if not prompt_imagem:
+                        prompt_imagem = user_text
+                    
+                    generated_image_url = gerar_imagem(prompt_imagem)
+                    
+                    if generated_image_url:
+                        st.image(generated_image_url, use_container_width=True)
+                        resposta = f"Pronto! Aqui está a imagem que você pediu 🐞✨\n\n{resposta}"
+               
+                st.markdown(resposta)
+               
+            except Exception as e:
+                st.error(f"Ops, a joaninha tropeçou 🐞\n\nErro: {str(e)}")
+                resposta = "Desculpa, tive um probleminha técnico. Tenta de novo?"
+                generated_image_url = None
+   
+    # Salva no histórico
+    assistant_msg = {"role": "assistant", "content": resposta}
+    if generated_image_url:
+        assistant_msg["generated_image"] = generated_image_url
+    
+    historico.append(assistant_msg)
+    st.session_state.conversas[st.session_state.conversa_atual_id]["mensagens"] = historico
