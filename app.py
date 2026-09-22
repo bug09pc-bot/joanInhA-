@@ -113,11 +113,14 @@ def buscar_lugar(nome_lugar):
         return f"Erro ao buscar o lugar: {str(e)}"
 
 def gerar_imagem(prompt):
+    """Gera imagem usando Pollinations.ai (gratuito e sem chave)"""
     try:
+        # Codifica o prompt para URL
         prompt_encoded = quote(prompt)
+        # URL da imagem (pode ajustar width e height se quiser)
         image_url = f"https://image.pollinations.ai/prompt/{prompt_encoded}?width=1024&height=1024&nologo=true"
         return image_url
-    except:
+    except Exception as e:
         return None
 
 # ==================== ESTADO DAS CONVERSAS ====================
@@ -142,6 +145,7 @@ def carregar_conversa(cid):
 def excluir_conversa(cid):
     if cid in st.session_state.conversas:
         del st.session_state.conversas[cid]
+        
         if st.session_state.conversa_atual_id == cid:
             if st.session_state.conversas:
                 st.session_state.conversa_atual_id = list(st.session_state.conversas.keys())[-1]
@@ -282,10 +286,6 @@ if prompt or uploaded_file is not None:
    
     with st.chat_message("assistant", avatar="🐞"):
         with st.spinner("joanInhA pensando..." if not uploaded_file else "joanInhA analisando..."):
-            
-            resposta = "Buguei um pouco 🐞 Tenta de novo daqui a pouco!"
-            imagem_gerada = None
-            
             try:
                 client = Groq(api_key=groq_key)
                
@@ -293,6 +293,7 @@ if prompt or uploaded_file is not None:
                 
                 texto_lower = user_text.lower()
                 
+                # Detecta se o usuário quer gerar uma imagem
                 quer_imagem = any(palavra in texto_lower for palavra in [
                     "cria uma imagem", "crie uma imagem", "gera uma imagem", "gere uma imagem",
                     "desenha", "desenhe", "faz uma imagem", "faça uma imagem",
@@ -430,27 +431,20 @@ Use essas informações de forma natural e didática quando o assunto for educa�
                         "content": user_text
                     })
                
-                # Tentativa de gerar resposta
-                modelos = [
-                    "openai/gpt-oss-20b",
-                    "openai/gpt-oss-120b",
-                    "qwen/qwen3.8-27b",
-                    "qwen/qwen3.6-27b",
-                ]
-                
-                for model in modelos:
-                    try:
-                        response = client.chat.completions.create(
-                            model=model,
-                            messages=messages,
-                            temperature=0.7,
-                            max_tokens=1500
-                        )
-                        resposta = response.choices[0].message.content
-                        break
-                    except Exception:
-                        continue
-
-                # Gera imagem se pediu
-                if quer_imagem:
-               
+                # Gera a resposta de texto
+                if img_base64:
+                    modelos_visao = [
+                        "qwen/qwen3.8-27b",
+                        "qwen/qwen3.6-27b",
+                        "meta-llama/llama-4-scout-17b-16e-instruct",
+                    ]
+                    
+                    resposta = None
+                    for model in modelos_visao:
+                        try:
+                            response = client.chat.completions.create(
+                                model=model,
+                                messages=messages,
+                                temperature=0.7,
+                                max_tokens=1024
+                            )
