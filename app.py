@@ -359,7 +359,7 @@ Só fale essas informações se a pessoa perguntar sobre a escola, nome, fundaç
                 info_criadores = """
 [Criadores da joanInhA - use SOMENTE quando o usuário perguntar]
 Esta inteligência artificial foi criada pelos estudantes do 7º ano 2026: Alexandre Raphael Soares Costa, Gentil Sully da Rocha Andrade e João Pedro Alves De Lima Silva.
-Orientador: Hery Tiago Fernandes de Oliveira e Natália Tavares Pinheiro Benigno.
+Orientador: Hery Tiago Fernandes de Oliveira, Cordenadora pedagógico Natália Tavares Pinheiro Benigno e Diretora pedagógico Olênia Aidê Leal de Nesquita
 Só mencione os criadores se a pessoa perguntar quem te criou, quem fez a joanInhA, quem são os desenvolvedores, etc.
 Responda de forma orgulhosa e amigável.
 """
